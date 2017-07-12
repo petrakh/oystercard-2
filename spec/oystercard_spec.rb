@@ -17,9 +17,6 @@ describe Oystercard do
       expect { subject.top_up 1 }.to raise_error "You tried to increase your balance by #{Oystercard::MAX_BALANCE + 1}. This is impossible! The maximum limit is £#{Oystercard::MAX_BALANCE}!"
     end
 
-    it 'deducts amount from card' do
-      expect { subject.deduct 5 }.to change { subject.balance }.by -5
-    end
   end
 
   describe '#journey' do
@@ -41,6 +38,12 @@ describe Oystercard do
       subject.touch_in
       subject.touch_out
       expect(subject.in_journey).to eq false
+    end
+
+    it "deducts the minimum fare on touch_out" do
+      subject.top_up(10)
+      subject.touch_in
+      expect{ subject.touch_out }.to change{ subject.balance }.by (-Oystercard::MIN_FARE)
     end
   end
 end
