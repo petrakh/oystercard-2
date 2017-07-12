@@ -33,7 +33,7 @@ describe Oystercard do
       expect(subject).to be_in_journey
     end
 
-    it 'assigns station name on touch_in' do
+    it 'assigns entry station name on touch_in' do
       expect(subject.entry_station).not_to be_nil
     end
 
@@ -49,17 +49,31 @@ describe Oystercard do
     before(:each) { subject.touch_in(station)}
 
     it 'changes in_journey to false with touch_out' do
-      subject.touch_out
+      subject.touch_out(station)
       expect(subject).not_to be_in_journey
     end
 
     it "deducts the minimum fare on touch_out" do
-      expect{ subject.touch_out }.to change{ subject.balance }.by (-Oystercard::MIN_FARE)
+      expect{ subject.touch_out(station) }.to change{ subject.balance }.by (-Oystercard::MIN_FARE)
     end
 
-    it 'forgets station name on touch_out' do
-      subject.touch_out
-      expect(subject.entry_station).to be_nil
+    it 'assigns exit station on touch_out' do
+      subject.touch_out(station)
+      expect(subject.exit_station).not_to be_nil
+    end
+  end
+
+  describe '#journey_history' do
+    before(:each) { subject.top_up(Oystercard::MAX_BALANCE)}
+
+    it 'is empty by default' do
+      expect(subject.journey_history).to be_empty
+    end
+
+    it 'should show one journey after one touch in and out' do
+      subject.touch_in(station)
+      subject.touch_out(station)
+      expect(subject.journey_history.length).to eq 1
     end
   end
 end
