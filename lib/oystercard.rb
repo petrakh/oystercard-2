@@ -1,8 +1,9 @@
+require_relative 'journey'
+
 # this will become our main class for the Oystrcard challenge
 class Oystercard
   MAX_BALANCE = 90
-  MIN_FARE = 1
-  attr_reader :balance, :entry_station, :exit_station, :journey_history
+  attr_reader :balance, :current_journey, :journey_history
 
   def initialize
     @balance = 0
@@ -10,25 +11,23 @@ class Oystercard
   end
 
   def top_up(amount)
-    raise "You tried to increase your balance by #{MAX_BALANCE + 1}. This is impossible! The maximum limit is £#{MAX_BALANCE}!" if balance + amount > MAX_BALANCE
+    raise "Could not exceed maximum balance of £#{MAX_BALANCE}." if (balance + amount > MAX_BALANCE)
     @balance += amount
   end
 
   def touch_in(station_name)
-    raise "Insufficient funds!" if balance < MIN_FARE
-    @in_journey = true
-    @entry_station = station_name
+    raise "Insufficient funds!" if balance < Journey::MIN_FARE
+    no_touch_out
+    @current_journey = Journey.new(station_name)
   end
 
   def touch_out(station_name)
-    @in_journey = false
-    deduct(MIN_FARE)
-    @exit_station = station_name
-    save_journey
+    no_touch_in
+    end_current_journey(station_name)
   end
 
   def in_journey?
-    entry_station && !exit_station
+    !current_journey.complete?
   end
 
   private
@@ -37,7 +36,18 @@ class Oystercard
     @balance -= amount
   end
 
-  def save_journey
-    @journey_history << {entry: entry_station, exit: exit_station}
+  def no_touch_in
+    @current_journey = Journey.new if current_journey.complete?
   end
+
+  def no_touch_out
+    deduct(current_journey.fare) unless current_journey.nil? || current_journey.complete?
+  end
+
+  def end_current_journey(station_name)
+    current_journey.end_journey(station_name)
+    deduct(current_journey.fare)
+    journey_history << current_journey
+  end
+
 end
