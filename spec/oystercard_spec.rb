@@ -27,11 +27,17 @@ describe Oystercard do
       expect(subject.in_journey).to eq false
     end
 
+    it 'doesnt allow touch_in unless the card has a minimum balance' do
+      expect {subject.touch_in}.to raise_error "Insufficient funds!"
+    end
+
     it 'changes in_journey to true with touch_in' do
+      subject.top_up(Oystercard::MAX_BALANCE)
       expect { subject.touch_in }.to change { subject.in_journey }.to true
     end
 
     it 'changes in_journey to false with touch_out' do
+      subject.top_up(Oystercard::MAX_BALANCE)
       subject.touch_in
       subject.touch_out
       expect(subject.in_journey).to eq false
