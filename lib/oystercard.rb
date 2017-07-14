@@ -37,7 +37,7 @@ class Oystercard
   end
 
   def no_touch_in
-    @current_journey = Journey.new if current_journey.complete?
+    @current_journey = Journey.new if current_journey.nil?
   end
 
   def no_touch_out

@@ -14,7 +14,7 @@ class Journey
   end
 
   def complete?
-    !!exit_station || false
+    !!exit_station && !!entry_station
   end
 
   def fare
